@@ -12,16 +12,27 @@ builder.Services.AddDbContext<AppDbContext>(opt =>
 });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+// 注册服务时定义命名策略
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("ReactApp", policy =>
+    {
+        policy.WithOrigins("https://localhost:3000", "http://localhost:3000")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+//配置跨域的中间件，位置要在 MapControllers 之前，
+// 在中间件管道中引用该策略
+app.UseCors("ReactApp"); // 必须在 UseRouting 之后（如果显式使用）
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers(); //负责路由
