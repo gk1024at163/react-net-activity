@@ -11,7 +11,7 @@ function App() {
   }, []);
   return (
     <>
-      <Typography variant="h3">Reactivities</Typography>
+      <Typography variant="h2">Reactivities</Typography>
       <List>
         {activities.map((activity) => (
           <ListItem key={activity.id}>{activity.title}</ListItem>
