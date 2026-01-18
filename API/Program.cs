@@ -1,4 +1,5 @@
 using Application.Activities.Queries;
+using Application.Core;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
 
@@ -24,7 +25,10 @@ builder.Services.AddCors(options =>
     });
 });
 builder.Services.AddMediatR(x =>
-x.RegisterServicesFromAssemblyContaining<GetActivityList.Handler>());
+        x.RegisterServicesFromAssemblyContaining<GetActivityList.Handler>());
+// Ensure we call the overload that accepts assemblies by providing
+// an explicit configuration action and the assembly to scan.
+builder.Services.AddAutoMapper(cfg => { }, typeof(Program).Assembly);
 
 var app = builder.Build();
 
