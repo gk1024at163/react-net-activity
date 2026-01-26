@@ -1,9 +1,11 @@
 import { Button, Card, CardActions, CardContent, CardMedia, Typography } from "@mui/material"
 
 type Props = {
-    activity: Activity
+    activity: Activity;
+    cancelSelectActivity: () => void;
+    openForm: (id: string) => void;
 }
-export default function ActivityDtail({ activity }: Props) {
+export default function ActivityDtail({ activity, cancelSelectActivity, openForm }: Props) {
     return (
         <Card sx={{ borderRadius: 3 }}>
             {/* 分类图片 */}
@@ -14,8 +16,8 @@ export default function ActivityDtail({ activity }: Props) {
                 <Typography variant="body1">{activity.description}</Typography>
             </CardContent>
             <CardActions>
-                <Button color="primary">Edit</Button>
-                <Button color="inherit">Cancel</Button>
+                <Button color="primary" onClick={() => openForm(activity.id)}>Edit</Button>
+                <Button color="inherit" onClick={cancelSelectActivity}>Cancel</Button>
             </CardActions>
         </Card>
     )

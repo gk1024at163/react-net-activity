@@ -7,7 +7,8 @@ import ActivityDashboard from "../../features/activities/dashboard/ActivityDashb
 
 function App() {
   const [activities, setActivities] = useState<Activity[]>([]);
-  const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
+  const [selectedActivity, setSelectedActivity] = useState<Activity | undefined>(undefined);
+  const [editMode, setEditMode] = useState(false);//2.添加状态以管理编辑模式
   useEffect(() => {
     axios
       .get("https://localhost:5001/api/activities")
@@ -19,18 +20,32 @@ function App() {
   }
 
   const handleCancelSelectActivity = () => {
-    setSelectedActivity(null);
+    setSelectedActivity(undefined);
+  }
+
+  const handleFormOpen = (id?: string) => {
+    if (id) handleSelectActivity(id);
+    else handleCancelSelectActivity();
+    setEditMode(true); // 打开表单
+  }
+  const handleFormClose = () => {
+    setEditMode(false);// 关闭表单
   }
 
   return (
     <Box sx={{ backgroundColor: '#eeeeee' }}>
       <CssBaseline />
-      <NavBar />
+      <NavBar openForm={handleFormOpen} />
       <Container maxWidth="xl" sx={{ mt: 3 }}>
-        <ActivityDashboard activities={activities}
+        <ActivityDashboard
+          activities={activities}
           selectedActivity={selectedActivity}
-          handleSelectActivity={handleSelectActivity}
-          handleCancelSelectActivity={handleCancelSelectActivity} />
+          selectActivity={handleSelectActivity}
+          cancelSelectActivity={handleCancelSelectActivity}
+          editMode={editMode}
+          openForm={handleFormOpen}
+          closeForm={handleFormClose}
+        />
       </Container>
 
     </Box>
