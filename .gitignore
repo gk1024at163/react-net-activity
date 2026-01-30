@@ -484,3 +484,5 @@ $RECYCLE.BIN/
 *.swp
 API/appsettings.json
 API/react-net-activity.db
+API/react-net-activity.db-wal
+API/react-net-activity.db-shm

@@ -1,17 +1,15 @@
 import { Button, Card, CardActions, CardContent, CardMedia, Typography } from "@mui/material"
+
+import { Link, useNavigate, useParams } from "react-router";
 import { useActivities } from "../../../lib/hooks/useActivities";
 
-type Props = {
-    selectedActivity: Activity;
-    cancelSelectActivity: () => void;
-    openForm: (id: string) => void;
-}
-export default function ActivityDtail({ selectedActivity, cancelSelectActivity, openForm }: Props) {
-    //获取活动数据
-    const { activities } = useActivities();
-    //根据 selectedActivity 的 id 查找对应的活动
-    const activity = activities?.find(x => x.id === selectedActivity.id);
-    if (!activity) return <Typography>Loading .... Activity not found</Typography>;
+
+export default function ActivityDtail() {
+    const navigate = useNavigate();
+    const { id } = useParams();//获取路由参数中的活动 ID
+    const { activity, isLoadingActivity } = useActivities(id);
+    if (isLoadingActivity) return <Typography>Loading Activity ... </Typography>;
+    if (!activity) return <Typography>Activity not found</Typography>;
 
     return (
         <Card sx={{ borderRadius: 3 }}>
@@ -23,8 +21,8 @@ export default function ActivityDtail({ selectedActivity, cancelSelectActivity, 
                 <Typography variant="body1">{activity.description}</Typography>
             </CardContent>
             <CardActions>
-                <Button color="primary" onClick={() => openForm(activity.id)}>Edit</Button>
-                <Button color="inherit" onClick={cancelSelectActivity}>Cancel</Button>
+                <Button component={Link} to={`/manageActivity/${activity.id}`} color="primary" >Edit</Button>
+                <Button color="inherit" onClick={() => navigate('/activities')}>Cancel</Button>
             </CardActions>
         </Card>
     )

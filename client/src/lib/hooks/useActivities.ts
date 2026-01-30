@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import agent from "../api/agent";
-export const useActivities = () => {
+export const useActivities = (id?: string) => {
 
     const queryClient = useQueryClient();
 
@@ -11,6 +11,15 @@ export const useActivities = () => {
             const response = await agent.get<Activity[]>('/activities');
             return response.data;
         }
+    });
+    //使用 React Query 的 useQuery 钩子获取单个活动数据（可选）
+    const { data: activity, isLoading: isLoadingActivity } = useQuery({
+        queryKey: ['activity', id],
+        queryFn: async () => {
+            const response = await agent.get<Activity>(`/activities/${id}`);
+            return response.data;
+        },
+        enabled: !!id // 仅当提供了 id 时才启用此查询
     });
 
     //使用 React Query 的 useMutation 钩子进行数据变更操作（可选）
@@ -44,5 +53,8 @@ export const useActivities = () => {
         }
     });
     //钩子中返回数据
-    return { activities, isPending, updateActivity, createActivity, deleteActivity };
+    return {
+        activities, isPending, updateActivity, createActivity, deleteActivity
+        , activity, isLoadingActivity
+    };
 };
