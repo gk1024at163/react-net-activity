@@ -1,8 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import agent from "../api/agent";
+import { useLocation } from "react-router";
 export const useActivities = (id?: string) => {
 
     const queryClient = useQueryClient();
+    const location = useLocation();
 
     //使用 React Query 的 useQuery 钩子获取活动数据
     const { data: activities, isPending } = useQuery({
@@ -10,7 +12,9 @@ export const useActivities = (id?: string) => {
         queryFn: async () => {
             const response = await agent.get<Activity[]>('/activities');
             return response.data;
-        }
+        },
+        enabled: !id && location.pathname === '/activities',//仅当没有提供 id 时且当前路径为活动列表页时启用此查询
+        //staleTime: 60 * 1000 //数据过期时间设置为1分钟,在此期间不会重新获取数据
     });
     //使用 React Query 的 useQuery 钩子获取单个活动数据（可选）
     const { data: activity, isLoading: isLoadingActivity } = useQuery({

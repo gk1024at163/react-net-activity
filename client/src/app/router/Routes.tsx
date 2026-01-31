@@ -3,7 +3,8 @@ import App from "../layout/App";
 import ActivityDashboard from "../../features/activities/dashboard/ActivityDashboard";
 import ActivityForm from "../../features/activities/form/ActivityForm";
 import HomePage from "../../features/home/HomePage";
-import ActivityDtail from "../../features/activities/detail/ActivityDtail";
+import ActivityDtailPage from "../../features/activities/detail/ActivityDtailPage";
+import CounterPage from "../../features/counter/CounterPage";
 
 export const router = createBrowserRouter([
     {
@@ -11,10 +12,11 @@ export const router = createBrowserRouter([
         element: <App />,
         children: [
             { path: "", element: <HomePage /> },
-            { path: "/activities", element: <ActivityDashboard /> },
-            { path: "/activities/:id", element: <ActivityDtail /> },
-            { path: "/createActivity", element: <ActivityForm key='create' /> },
-            { path: "/manageActivity/:id", element: <ActivityForm key='manage' /> },
+            { path: "activities", element: <ActivityDashboard /> },
+            { path: "activities/:id", element: <ActivityDtailPage /> },
+            { path: "createActivity", element: <ActivityForm key='create' /> },
+            { path: "manageActivity/:id", element: <ActivityForm key='manage' /> },
+            { path: 'counter', element: <CounterPage /> }
         ]
     },
 ]);
