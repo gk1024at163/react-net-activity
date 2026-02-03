@@ -1,5 +1,8 @@
+using Application.Activities;
 using Application.Activities.Queries;
 using Application.Core;
+using FluentValidation;
+using Microsoft.AspNetCore.Http.Json;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
 
@@ -24,17 +27,27 @@ builder.Services.AddCors(options =>
               .AllowAnyMethod();
     });
 });
+builder.Services.Configure<JsonOptions>(options =>
+{
+    options.SerializerOptions.WriteIndented = true; // 启用缩进格式
+});
 builder.Services.AddMediatR(x =>
-        x.RegisterServicesFromAssemblyContaining<GetActivityList.Handler>());
-// Ensure we call the overload that accepts assemblies by providing
-// an explicit configuration action and the assembly to scan.
-//builder.Services.AddAutoMapper(typeof(MappingProfiles).Assembly);
+{
+    x.RegisterServicesFromAssemblyContaining<GetActivityList.Handler>();
+    x.AddOpenBehavior(typeof(ValidationBehavior<,>));
+});
+
 builder.Services.AddAutoMapper(cfg =>
 {
     cfg.AddProfile<MappingProfiles>();
 });
+builder.Services.AddValidatorsFromAssemblyContaining<CreateActivityValidator>();//注册 FluentValidation 验证器
+builder.Services.AddTransient<API.Middleware.ExceptionMiddleware>();//注册自定义异常处理中间件,瞬时服务意味着需要时创建一个新的实例，异常处理后就释放
 
 var app = builder.Build();
+
+//异常处理中间件必须放到最顶部
+app.UseMiddleware<API.Middleware.ExceptionMiddleware>();
 
 //配置跨域的中间件，位置要在 MapControllers 之前，
 // 在中间件管道中引用该策略

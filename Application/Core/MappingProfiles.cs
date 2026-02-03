@@ -1,4 +1,6 @@
 using System;
+using Application.Activities.DTOs;
+using Domain;
 
 namespace Application.Core;
 
@@ -8,5 +10,7 @@ public class MappingProfiles : AutoMapper.Profile
     {
         //源对象到目标对象的映射
         CreateMap<Domain.Activity, Domain.Activity>();//用于EditActivity中给实体赋值
+        CreateMap<CreateActivityDto, Activity>();
+        CreateMap<EditActivityDto, Activity>();
     }
 }
