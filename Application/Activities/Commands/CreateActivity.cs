@@ -11,12 +11,16 @@ namespace Application.Activities.Commands;
 
 public class CreateActivity
 {
+    /// <summary>
+    /// 命令表示要执行的操作
+    /// </summary>
     public class Command : IRequest<Result<string>>
     {
         public required CreateActivityDto CreateActivityDto { get; set; }
     }
 
-    public class Handler(AppDbContext context, IMapper mapper) : IRequestHandler<Command, Result<string>>
+    public class Handler(AppDbContext context, IMapper mapper) 
+        : IRequestHandler<Command, Result<string>>
     {
         public async Task<Result<string>> Handle(Command request, CancellationToken cancellationToken)
         {
