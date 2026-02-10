@@ -58,7 +58,8 @@ public class BaseActivityValidator<T, TDto>
         RuleFor(selector.Append(x => x.Description))
              .NotEmpty().WithMessage("Description is required");
         RuleFor(selector.Append(x => x.Date))
-        .GreaterThan(DateTime.UtcNow)
+        // .GreaterThan(DateTime.UtcNow)
+        .GreaterThanOrEqualTo(DateTime.UtcNow.AddMinutes(-10)).WithMessage("Date must be in the future")
         .WithMessage("Date must be in the future");
         RuleFor(selector.Append(x => x.Category))
         .NotEmpty().WithMessage("Category is required");
