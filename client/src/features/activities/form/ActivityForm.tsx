@@ -1,56 +1,123 @@
-import { Box, Button, Paper, TextField, Typography } from "@mui/material";
-import type { FormEvent } from "react";
+import { Box, Button, Paper, Typography } from "@mui/material";
 import { useActivities } from "../../../lib/hooks/useActivities";
+import { useForm, type Resolver } from "react-hook-form";
+import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { activitySchema, type ActivitySchema, } from "../../../lib/schemas/activitySchema";
+import TextInput from "../../../app/shared/components/TextInput";
+import SelectInput from "../../../app/shared/components/SelectInput";
+import DateTimeInput from "../../../app/shared/components/DateTimeInput";
+import { type Activity } from "../../../lib/types";
+
+import { categoryOptions } from "./CategoryOptions";
+import LocationInput from "../../../app/shared/components/LocationInput";
 
 export default function ActivityForm() {
-  const { id } = useParams();
-  const { updateActivity, createActivity, activity, isLoadingActivity } = useActivities(id);
+  const { control, reset, handleSubmit } = useForm<ActivitySchema>({
+    mode: "onTouched",
+    resolver: zodResolver(activitySchema) as Resolver<ActivitySchema>,
+    defaultValues: {
+      title: "",
+      description: "",
+      category: "",
+      date: new Date(Date.now() + 3600000), // 设置为1小时后，确保满足"未来时间"验证
+    },
+  });
   const navigate = useNavigate();
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();//阻止表单默认提交行为,会刷新页面
-    // 提交表单逻辑待添加
-    const formData = new FormData(event.currentTarget);
+  const { id } = useParams();
+  const { updateActivity, createActivity, activity, isLoadingActivity } =
+    useActivities(id);
 
-    const data: { [key: string]: FormDataEntryValue } = {};
-    formData.forEach((value, key) => {
-      data[key] = value; //key是TextField的name属性值，value是用户输入的值
-    })
+  useEffect(() => {
+    // 当活动数据更新时，将数据填充到表单中
+    if (activity)
+      reset({
+        ...activity,
+        date: activity.date ? new Date(activity.date) : undefined,
+        location: {
+          city: activity.city,
+          venue: activity.venue,
+          latitude: activity.latitude,
+          longitude: activity.longitude,
+        },
+      });
+  }, [activity, reset]);
 
-    if (activity) { // 更新活动
-      data.id = activity.id;
-      await updateActivity.mutateAsync(data as unknown as Activity);
-      navigate(`/activities/${activity.id}`);
-    } else { // 创建新活动
-      await createActivity.mutateAsync(data as unknown as Activity);
+  //提交表单
+  const onSubmit = async (data: ActivitySchema) => {
+    const { location, ...rest } = data; // ...rest表示其余属性 location的所有属性会解构到 location 对象中
+    const flattenedData = { ...rest, ...location };//扁平结构对象
+
+    // 创建活动时的数据类型（不包含id和isCancelled）
+    type CreateActivityData = Omit<Activity, 'id' | 'isCancelled'>;
+
+    try {
+      if (activity) {//修改
+        updateActivity.mutate(
+          { ...activity, ...flattenedData },
+          {
+            onSuccess: () => navigate(`/activities/${activity.id}`),
+          }
+        );
+      } else {//创建，但这里没有id属性isCancelled，需要调整 createActvity 逻辑
+        createActivity.mutate(flattenedData as CreateActivityData, {
+          onSuccess: (id) => navigate(`/activities/${id}`),
+        });
+      }
+    } catch (error) {
+      console.log(error);
     }
-  }
+  };
+
   if (isLoadingActivity) return <Typography>Loading activity...</Typography>
+
   return (
-    <Paper sx={{ padding: 3, borderRadius: 3 }}>
-      <Typography variant="h5" color="primary" gutterBottom>
-        {activity ? "Edit activity" : "Create activity"}
+    <Paper sx={{ borderRadius: 3, padding: 3 }}>
+      <Typography variant="h5" gutterBottom color="primary">
+        {activity ? "Edit Activity" : "Create Activity"}
       </Typography>
-      <Box component='form' onSubmit={handleSubmit} display='flex' flexDirection='column' gap={2}>
-        {/* 表单内容待添加 */}
-        <TextField name='title' label='Title' defaultValue={activity?.title} />
-        <TextField name='description' label='Description' multiline rows={3} defaultValue={activity?.description} />
-        <TextField name='category' label='Category' defaultValue={activity?.category} />
-        <TextField name='date' label='Date' type="date"
-          defaultValue={activity?.date
-            ? new Date(activity.date).toISOString().split('T')[0]
-            : new Date().toISOString().split('T')[0]
-          } />
-        <TextField name='city' label='City' defaultValue={activity?.city} />
-        <TextField name='venue' label='Venue' defaultValue={activity?.venue} />
-        <Box display='flex' justifyContent='end' gap={3}>
-          <Button variant='contained' color='inherit' onClick={() => { }}>Cancel</Button>
+      <Box
+        component="form"
+        onSubmit={handleSubmit(onSubmit)}
+        display="flex"
+        flexDirection="column"
+        gap={3}
+      >
+        <TextInput label="Title" control={control} name="title" />
+        <TextInput
+          label="Description"
+          control={control}
+          name="description"
+          multiline
+          rows={3}
+        />
+        <Box display="flex" gap={3}>
+          <SelectInput
+            items={categoryOptions}
+            label="Category"
+            control={control}
+            name="category"
+          />
+          <DateTimeInput label="Date" control={control} name="date" />
+        </Box>
+        <LocationInput
+          control={control}
+          label="Enter the location"
+          name="location"
+        />
+        <Box display="flex" justifyContent="end" gap={3}>
+          <Button color="inherit">Cancel</Button>
           <Button
-            variant='contained'
-            color='success' type="submit"
-            disabled={updateActivity.isPending || createActivity.isPending}>Submit</Button>
+            type="submit"
+            color="success"
+            variant="contained"
+            disabled={updateActivity.isPending || createActivity.isPending}
+          >
+            Submit
+          </Button>
         </Box>
       </Box>
     </Paper>
-  )
+  );
 }

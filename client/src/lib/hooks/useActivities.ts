@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import agent from "../api/agent";
 import { useLocation } from "react-router";
+import type { Activity } from "../types";
 export const useActivities = (id?: string) => {
 
     const queryClient = useQueryClient();
@@ -27,25 +28,32 @@ export const useActivities = (id?: string) => {
     });
 
     //使用 React Query 的 useMutation 钩子进行数据变更操作（可选）
-    const updateActivity = useMutation({
-        mutationFn: async (activity: Activity) => {
-            await agent.put<Activity>(`/activities`, activity);
-        },
-        onSuccess: () => {
-            // 刷新活动列表数据
-            queryClient.invalidateQueries({ queryKey: ['activities'] });
-        }
-    });
+
     //新增活动
     const createActivity = useMutation({
-        mutationFn: async (activity: Activity) => {
-            await agent.post<Activity>(`/activities`, activity);
+        //mutationFn: 创建活动函数通过Omit 删除id和isCancelled字段
+        mutationFn: async (activity: Omit<Activity, 'id' | 'isCancelled'>) => {
+            const response = await agent.post<Activity>(`/activities`, activity);
+            return response.data;//返回新创建的活动数据id
         },
         onSuccess: () => {
             // 刷新活动列表数据
             queryClient.invalidateQueries({ queryKey: ['activities'] });
         }
     });
+
+    //更新活动
+    const updateActivity = useMutation({
+        mutationFn: async (activity: Activity) => {
+            return await agent.put<void>(`/activities/${activity.id}`, activity);
+        },
+        onSuccess: (_, variables) => {
+            // 刷新活动列表数据和详情数据
+            queryClient.invalidateQueries({ queryKey: ['activities'] });
+            queryClient.invalidateQueries({ queryKey: ['activity', variables.id] });
+        }
+    });
+
     //删除活动
     const deleteActivity = useMutation({
         mutationFn: async (id: string) => {
