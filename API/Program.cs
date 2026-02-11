@@ -1,15 +1,26 @@
+using API.Middleware;
 using Application.Activities;
 using Application.Activities.Queries;
 using Application.Core;
+using Domain;
 using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Json;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // 向容器中注册服务
-builder.Services.AddControllers();
+builder.Services.AddControllers(opt =>
+{
+    var policy = new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build();
+    opt.Filters.Add(new AuthorizeFilter(policy));
+});
 //通过 AddDbContext 注册 ActivityDbContext 服务,并且有数据库配置
 builder.Services.AddDbContext<AppDbContext>(opt =>
 {
@@ -24,7 +35,8 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins("https://localhost:3000", "http://localhost:3000")
               .AllowAnyHeader()
-              .AllowAnyMethod();
+              .AllowAnyMethod()
+              .AllowCredentials();//允许发送cookie，解决跨端跨域
     });
 });
 builder.Services.Configure<JsonOptions>(options =>
@@ -42,7 +54,14 @@ builder.Services.AddAutoMapper(cfg =>
     cfg.AddProfile<MappingProfiles>();
 });
 builder.Services.AddValidatorsFromAssemblyContaining<CreateActivityValidator>();//注册 FluentValidation 验证器
-builder.Services.AddTransient<API.Middleware.ExceptionMiddleware>();//注册自定义异常处理中间件,瞬时服务意味着需要时创建一个新的实例，异常处理后就释放
+builder.Services.AddTransient<ExceptionMiddleware>();//注册自定义异常处理中间件,瞬时服务意味着需要时创建一个新的实例，异常处理后就释放
+//1. 注册身份验证服务
+builder.Services.AddIdentityApiEndpoints<User>(opt =>
+{
+    opt.User.RequireUniqueEmail = true;
+})
+.AddRoles<IdentityRole>()
+.AddEntityFrameworkStores<AppDbContext>();
 
 var app = builder.Build();
 
@@ -57,9 +76,15 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
 app.UseHttpsRedirection();
-app.UseAuthorization();
+//2. 使用身份认证中间件，一定要在MapControllers之前
+app.UseAuthentication();//认证（先认证）
+app.UseAuthorization();//授权（才授权）
 app.MapControllers(); //负责路由
+
+//3. 映射api认证端点
+app.MapGroup("api").MapIdentityApi<User>();
 
 // 初始化数据库
 using var scope = app.Services.CreateScope();
@@ -67,8 +92,9 @@ var services = scope.ServiceProvider;
 try
 {
     var context = services.GetRequiredService<AppDbContext>();//获取数据库上下文
+    var userManager = services.GetRequiredService<UserManager<User>>();//获取用户管理器
     await context.Database.MigrateAsync(); //应用所有挂起的迁移,数据库不存在则创建数据库
-    await DbInitializer.SeedData(context); //调用种子数据方法
+    await DbInitializer.SeedData(context, userManager); //调用种子数据方法
 }
 catch (Exception ex)
 {

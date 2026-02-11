@@ -8,7 +8,6 @@ import { activitySchema, type ActivitySchema, } from "../../../lib/schemas/activ
 import TextInput from "../../../app/shared/components/TextInput";
 import SelectInput from "../../../app/shared/components/SelectInput";
 import DateTimeInput from "../../../app/shared/components/DateTimeInput";
-import { type Activity } from "../../../lib/types";
 
 import { categoryOptions } from "./CategoryOptions";
 import LocationInput from "../../../app/shared/components/LocationInput";
@@ -21,7 +20,7 @@ export default function ActivityForm() {
       title: "",
       description: "",
       category: "",
-      date: new Date(Date.now() + 3600000), // 设置为1小时后，确保满足"未来时间"验证
+      date: new Date(),
     },
   });
   const navigate = useNavigate();
@@ -30,7 +29,6 @@ export default function ActivityForm() {
     useActivities(id);
 
   useEffect(() => {
-    // 当活动数据更新时，将数据填充到表单中
     if (activity)
       reset({
         ...activity,
@@ -43,15 +41,9 @@ export default function ActivityForm() {
         },
       });
   }, [activity, reset]);
-
-  //提交表单
   const onSubmit = async (data: ActivitySchema) => {
     const { location, ...rest } = data; // ...rest表示其余属性 location的所有属性会解构到 location 对象中
     const flattenedData = { ...rest, ...location };//扁平结构对象
-
-    // 创建活动时的数据类型（不包含id和isCancelled）
-    type CreateActivityData = Omit<Activity, 'id' | 'isCancelled'>;
-
     try {
       if (activity) {//修改
         updateActivity.mutate(
@@ -60,14 +52,15 @@ export default function ActivityForm() {
             onSuccess: () => navigate(`/activities/${activity.id}`),
           }
         );
-      } else {//创建，但这里没有id属性isCancelled，需要调整 createActvity 逻辑
-        createActivity.mutate(flattenedData as CreateActivityData, {
+      } else {//创建
+        createActivity.mutate(flattenedData, {
           onSuccess: (id) => navigate(`/activities/${id}`),
         });
       }
     } catch (error) {
       console.log(error);
     }
+
   };
 
   if (isLoadingActivity) return <Typography>Loading activity...</Typography>
