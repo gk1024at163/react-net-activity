@@ -2,8 +2,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import agent from "../api/agent";
 import { useLocation } from "react-router";
 import type { Activity } from "../types";
-export const useActivities = (id?: string) => {
 
+// 定义创建活动时的数据类型（不包含id和isCancelled）
+type CreateActivityData = Omit<Activity, 'id' | 'isCancelled'>;
+
+export const useActivities = (id?: string) => {
     const queryClient = useQueryClient();
     const location = useLocation();
 
@@ -39,7 +42,7 @@ export const useActivities = (id?: string) => {
     });
     //新增活动
     const createActivity = useMutation({
-        mutationFn: async (activity: Activity) => {
+        mutationFn: async (activity: CreateActivityData) => {
             const response = await agent.post<Activity>(`/activities`, activity);
             return response.data;//返回新创建的活动数据id
         },

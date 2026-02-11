@@ -11,6 +11,7 @@ import DateTimeInput from "../../../app/shared/components/DateTimeInput";
 
 import { categoryOptions } from "./CategoryOptions";
 import LocationInput from "../../../app/shared/components/LocationInput";
+import type { Activity } from "../../../lib/types";
 
 export default function ActivityForm() {
   const { control, reset, handleSubmit } = useForm<ActivitySchema>({
@@ -44,6 +45,9 @@ export default function ActivityForm() {
   const onSubmit = async (data: ActivitySchema) => {
     const { location, ...rest } = data; // ...rest表示其余属性 location的所有属性会解构到 location 对象中
     const flattenedData = { ...rest, ...location };//扁平结构对象
+
+    // 创建活动时的数据类型（不包含id和isCancelled）
+    type CreateActivityData = Omit<Activity, 'id' | 'isCancelled'>;
     try {
       if (activity) {//修改
         updateActivity.mutate(
@@ -53,7 +57,7 @@ export default function ActivityForm() {
           }
         );
       } else {//创建
-        createActivity.mutate(flattenedData, {
+        createActivity.mutate(flattenedData as CreateActivityData, {
           onSuccess: (id) => navigate(`/activities/${id}`),
         });
       }

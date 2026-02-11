@@ -10,7 +10,8 @@ const sleep = (delay: number) => {
 };
 
 const agent = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || 'https://localhost:5001/api'
+    baseURL: import.meta.env.VITE_API_URL || 'https://localhost:5001/api',
+    withCredentials: true
 });
 
 //响应拦截器
