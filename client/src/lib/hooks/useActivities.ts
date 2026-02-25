@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import agent from "../api/agent";
 import { useLocation } from "react-router";
-import type { Activity } from "../types";
+import { useAccount } from "./useAccount";
 
 // 定义创建活动时的数据类型（不包含id和isCancelled）
 type CreateActivityData = Omit<Activity, 'id' | 'isCancelled'>;
@@ -9,16 +9,16 @@ type CreateActivityData = Omit<Activity, 'id' | 'isCancelled'>;
 export const useActivities = (id?: string) => {
     const queryClient = useQueryClient();
     const location = useLocation();
+    const { currentUser } = useAccount();
 
     //使用 React Query 的 useQuery 钩子获取活动数据
-    const { data: activities, isPending } = useQuery({
+    const { data: activities, isLoading } = useQuery({
         queryKey: ['activities'],
         queryFn: async () => {
             const response = await agent.get<Activity[]>('/activities');
             return response.data;
         },
-        enabled: !id && location.pathname === '/activities',//仅当没有提供 id 时且当前路径为活动列表页时启用此查询
-        //staleTime: 60 * 1000 //数据过期时间设置为1分钟,在此期间不会重新获取数据
+        enabled: !id && location.pathname === '/activities' && !!currentUser,
     });
     //使用 React Query 的 useQuery 钩子获取单个活动数据（可选）
     const { data: activity, isLoading: isLoadingActivity } = useQuery({
@@ -27,7 +27,7 @@ export const useActivities = (id?: string) => {
             const response = await agent.get<Activity>(`/activities/${id}`);
             return response.data;
         },
-        enabled: !!id // 仅当提供了 id 时才启用此查询
+        enabled: !!id && !!currentUser,// 仅当提供了 id 并且登录了 时才启用此查询
     });
 
     //使用 React Query 的 useMutation 钩子进行数据变更操作（可选）
@@ -63,7 +63,7 @@ export const useActivities = (id?: string) => {
     });
     //钩子中返回数据
     return {
-        activities, isPending, updateActivity, createActivity, deleteActivity
+        activities, isLoading, updateActivity, createActivity, deleteActivity
         , activity, isLoadingActivity
     };
 };

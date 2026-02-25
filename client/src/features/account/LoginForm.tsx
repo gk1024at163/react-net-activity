@@ -5,17 +5,26 @@ import { useForm } from "react-hook-form";
 import { Box, Button, Paper, Typography } from "@mui/material";
 import { LockOpen } from "@mui/icons-material";
 import TextInput from "../../app/shared/components/TextInput";
+import { useNavigate, useLocation, Link } from "react-router";
 
 
 export default function LoginForm() {
     const { loginUser } = useAccount();
+    const navigate = useNavigate();
+    const location = useLocation();
+
     const { control, handleSubmit, formState: { isValid, isSubmitting } } = useForm<LoginSchema>({
         mode: 'onTouched',
         resolver: zodResolver(loginSchema),
     });
     //处理提交的函数
     const onSubmit = async (data: LoginSchema) => {
-        await loginUser.mutateAsync(data);
+        await loginUser.mutateAsync(data, {
+            onSuccess: () => {
+                console.log('Login successful');
+                navigate(location.state?.from || '/activities');//登录成功后跳转到登录前的页面
+            },
+        });
     }
     return (
         <Paper
@@ -39,6 +48,21 @@ export default function LoginForm() {
             >
                 Login
             </Button>
+            {/* 注册 */}
+            <Box
+                display="flex"
+                sx={{ justifyContent: "center", alignItems: "center" }}
+            >
+                <Typography>Don't have an account?</Typography>
+                <Typography
+                    sx={{ ml: 2 }}
+                    component={Link}
+                    to="/register"
+                    color="primary"
+                >
+                    Sign up
+                </Typography>
+            </Box>
         </Paper >
     )
 }

@@ -12,7 +12,7 @@ type Activity = {
 }
 
 // LocationIQ 的位置查詢結果
-export type LocationIQSuggestion = {
+type LocationIQSuggestion = {
   place_id: string;
   osm_id: string;
   osm_type: string;
@@ -28,7 +28,7 @@ export type LocationIQSuggestion = {
   address: LocationIQAddress;
 };
 
-export type LocationIQAddress = {
+type LocationIQAddress = {
   name: string;
   country: string;
   country_code: string;
@@ -41,3 +41,10 @@ export type LocationIQAddress = {
   city?: string;
   postcode?: string;
 };
+
+type User = {
+  id: string
+  email: string
+  displayName: string
+  imageUrl?: string
+}
