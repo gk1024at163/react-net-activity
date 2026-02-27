@@ -8,7 +8,13 @@ type Activity = {
   city: string
   venue: string
   latitude: number
-  longitude: number
+  longitude: number,
+  //补充参与者属性
+  attendees: Profile[]
+  hostId: string
+  hostDisplayName: string
+  isGoing: boolean
+  isHost: boolean
 }
 
 // LocationIQ 的位置查詢結果
@@ -46,5 +52,13 @@ type User = {
   id: string
   email: string
   displayName: string
+  imageUrl?: string
+}
+
+//参与者用户档案返回的属性
+type Profile = {
+  id: string
+  displayName: string
+  bio?: string
   imageUrl?: string
 }

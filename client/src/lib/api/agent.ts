@@ -3,11 +3,11 @@ import { store } from "../stores/store";
 import { toast } from "react-toastify";
 import { router } from "../../app/router/Routes";
 
-const sleep = (delay: number) => {
-    return new Promise((resolve) => {
-        setTimeout(resolve, delay);
-    });
-};
+// const sleep = (delay: number) => {
+//     return new Promise((resolve) => {
+//         setTimeout(resolve, delay);
+//     });
+// };
 
 const agent = axios.create({
     baseURL: import.meta.env.VITE_API_URL || 'https://localhost:5001/api',
@@ -17,12 +17,12 @@ const agent = axios.create({
 //响应拦截器
 agent.interceptors.response.use(
     async response => {
-        await sleep(2000);
+        // await sleep(2000);
         store.uiStore.setIdle();
         return response;
     },
     async error => {
-        await sleep(2000);
+        // await sleep(2000);
         store.uiStore.setIdle();
         const { status, data } = error.response;
         switch (status) {

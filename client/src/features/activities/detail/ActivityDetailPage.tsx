@@ -1,15 +1,12 @@
 import { Grid2, Typography } from "@mui/material"
 
-import { useNavigate, useParams } from "react-router";
+import { useParams } from "react-router";
 import { useActivities } from "../../../lib/hooks/useActivities";
 import ActivityDetailHeader from "./ActivityDetailHeader";
 import ActivityDetailInfo from "./ActivityDetailInfo";
-import ActivityDtailChat from "./ActivityDtailChat";
+import ActivityDtailChat from "./ActivityDetailChat";
 import ActivityDetailSidebar from "./ActivityDetailSidebar";
-
-
-export default function ActivityDtailPage() {
-    const navigate = useNavigate();
+export default function ActivityDetailPage() {
     const { id } = useParams();//获取路由参数中的活动 ID
     const { activity, isLoadingActivity } = useActivities(id);
     if (isLoadingActivity) return <Typography>Loading Activity ... </Typography>;
@@ -22,7 +19,7 @@ export default function ActivityDtailPage() {
                 <ActivityDetailInfo activity={activity} />
                 <ActivityDtailChat />
             </Grid2>
-            <Grid2 size={4}><ActivityDetailSidebar /></Grid2>
+            <Grid2 size={4}><ActivityDetailSidebar activity={activity} /></Grid2>
         </Grid2>
     )
 }

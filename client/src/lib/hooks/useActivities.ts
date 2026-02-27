@@ -19,15 +19,32 @@ export const useActivities = (id?: string) => {
             return response.data;
         },
         enabled: !id && location.pathname === '/activities' && !!currentUser,
+        select: (data) => {
+            return data.map(activity => {
+                return {
+                    ...activity,
+                    isHost: currentUser.id === activity.hostId,
+                    isGoing: activity.attendees.some(a => a.id === currentUser.id)
+                }
+            })
+        }
     });
     //使用 React Query 的 useQuery 钩子获取单个活动数据（可选）
     const { data: activity, isLoading: isLoadingActivity } = useQuery({
-        queryKey: ['activity', id],
+        queryKey: ['activities', id],
         queryFn: async () => {
             const response = await agent.get<Activity>(`/activities/${id}`);
             return response.data;
         },
         enabled: !!id && !!currentUser,// 仅当提供了 id 并且登录了 时才启用此查询
+        select: (data) => {
+            return {
+                ...data,
+                isHost: data.hostId === currentUser.id,
+                isGoing: data.attendees.some(a => a.id === currentUser.id)
+            }
+        },
+        refetchOnWindowFocus: false, // 默认值为 true  窗口聚焦时自动刷新数据
     });
 
     //使用 React Query 的 useMutation 钩子进行数据变更操作（可选）
@@ -65,9 +82,67 @@ export const useActivities = (id?: string) => {
             queryClient.invalidateQueries({ queryKey: ['activities'] });
         }
     });
+    //参加活动
+    const updateAttendance = useMutation({
+        mutationFn: async (id: string) => {
+            await agent.post(`/activities/${id}/attend`);
+        },
+        onMutate: async (activityId: string) => {
+            await queryClient.cancelQueries({ queryKey: ["activities", activityId] });
+
+            const prevActivity = queryClient.getQueryData<Activity>([
+                "activities",
+                activityId,
+            ]);
+
+            queryClient.setQueryData<Activity>(
+                ["activities", activityId],
+                (oldActivity) => {
+                    if (!oldActivity || !currentUser) {
+                        return oldActivity;
+                    }
+
+                    const isHost = oldActivity.hostId === currentUser.id;
+                    const isAttending = oldActivity.attendees.some(
+                        (x) => x.id === currentUser.id
+                    );
+
+                    return {
+                        ...oldActivity,
+                        isCancelled: isHost
+                            ? !oldActivity.isCancelled
+                            : oldActivity.isCancelled,
+                        attendees: isAttending
+                            ? isHost
+                                ? oldActivity.attendees
+                                : oldActivity.attendees.filter((x) => x.id !== currentUser.id)
+                            : [
+                                ...oldActivity.attendees,
+                                {
+                                    id: currentUser.id,
+                                    displayName: currentUser.displayName,
+                                    imageUrl: currentUser.imageUrl,
+                                },
+                            ],
+                    };
+                }
+            );
+            return { prevActivity };
+        },
+        onError: (_error, activityId, context) => {
+            if (context?.prevActivity) {
+                queryClient.setQueryData(
+                    ["activities", activityId],
+                    context.prevActivity
+                );
+            }
+        },
+    });
+
+
     //钩子中返回数据
     return {
         activities, isLoading, updateActivity, createActivity, deleteActivity
-        , activity, isLoadingActivity
+        , activity, isLoadingActivity, updateAttendance
     };
 };
