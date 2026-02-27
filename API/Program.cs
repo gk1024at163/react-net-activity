@@ -2,6 +2,7 @@ using API.Middleware;
 using Application.Activities;
 using Application.Activities.Queries;
 using Application.Core;
+using Application.Interfaces;
 using Domain;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
@@ -10,6 +11,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
+using Infrastructure.Security;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -49,6 +51,9 @@ builder.Services.AddMediatR(x =>
     x.AddOpenBehavior(typeof(ValidationBehavior<,>));
 });
 
+builder.Services.AddScoped<IUserAccessor, UserAccessor>();
+
+
 builder.Services.AddAutoMapper(cfg =>
 {
     cfg.AddProfile<MappingProfiles>();
@@ -62,6 +67,17 @@ builder.Services.AddIdentityApiEndpoints<User>(opt =>
 })
 .AddRoles<IdentityRole>()
 .AddEntityFrameworkStores<AppDbContext>();
+
+//2. 注册授权服务，并添加自定义的授权策略
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("IsActivityHost", policy =>
+    {
+        policy.Requirements.Add(new IsHostRequirement());
+    });
+});
+//3. 注册自定义的授权处理程序,只需要短暂坚持即可，因为它不需要维护任何状态，每次授权时都会创建一个新的实例
+builder.Services.AddTransient<IAuthorizationHandler, IsHostRequirementHandler>();
 
 var app = builder.Build();
 

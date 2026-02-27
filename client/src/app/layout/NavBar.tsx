@@ -33,9 +33,9 @@ export default function NavBar() {
                 <MenuItemLink to='/counter'>Counter</MenuItemLink>
                 <MenuItemLink to='/errors'>Errors</MenuItemLink>
               </Box>
-              <Box display="flex" alignItems="center">
+              <Box sx={{ display: 'flex' }}>
                 {currentUser ?
-                  (<UserMenu />)
+                  <UserMenu />
                   : (
                     <>
                       <MenuItemLink to='/login'>Login</MenuItemLink>

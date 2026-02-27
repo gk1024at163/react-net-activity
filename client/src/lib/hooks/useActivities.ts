@@ -4,7 +4,7 @@ import { useLocation } from "react-router";
 import { useAccount } from "./useAccount";
 
 // 定义创建活动时的数据类型（不包含id和isCancelled）
-type CreateActivityData = Omit<Activity, 'id' | 'isCancelled'>;
+//type CreateActivityData = Omit<Activity, 'id' | 'isCancelled'>;
 
 export const useActivities = (id?: string) => {
     const queryClient = useQueryClient();
@@ -31,18 +31,10 @@ export const useActivities = (id?: string) => {
     });
 
     //使用 React Query 的 useMutation 钩子进行数据变更操作（可选）
-    const updateActivity = useMutation({
-        mutationFn: async (activity: Activity) => {
-            await agent.put<Activity>(`/activities`, activity);
-        },
-        onSuccess: () => {
-            // 刷新活动列表数据
-            queryClient.invalidateQueries({ queryKey: ['activities'] });
-        }
-    });
+
     //新增活动
     const createActivity = useMutation({
-        mutationFn: async (activity: CreateActivityData) => {
+        mutationFn: async (activity: Omit<Activity, 'id' | 'isCancelled'>) => {
             const response = await agent.post<Activity>(`/activities`, activity);
             return response.data;//返回新创建的活动数据id
         },
@@ -51,6 +43,18 @@ export const useActivities = (id?: string) => {
             queryClient.invalidateQueries({ queryKey: ['activities'] });
         }
     });
+
+    //更新活动
+    const updateActivity = useMutation({
+        mutationFn: async (activity: Activity) => {
+            return await agent.put<void>(`/activities/${activity.id}`, activity); // ✅ 修复：添加活动ID到URL
+        },
+        onSuccess: () => {
+            // 刷新活动列表数据和详情数据
+            queryClient.invalidateQueries({ queryKey: ['activities'] });
+        }
+    });
+
     //删除活动
     const deleteActivity = useMutation({
         mutationFn: async (id: string) => {
