@@ -10,6 +10,7 @@ public class AppDbContext(DbContextOptions options)
     public required DbSet<Activity> Activities { get; set; }
     //4. 配置多对多关系
     public required DbSet<ActivityAttendee> ActivityAttendees { get; set; }
+    public required DbSet<Photo> Photos { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

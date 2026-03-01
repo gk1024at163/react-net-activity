@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
 using Infrastructure.Security;
+using Infrastructure.Photos;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -52,7 +53,7 @@ builder.Services.AddMediatR(x =>
 });
 
 builder.Services.AddScoped<IUserAccessor, UserAccessor>();
-
+builder.Services.AddScoped<IPhotoService, PhotoService>();
 
 builder.Services.AddAutoMapper(cfg =>
 {
@@ -78,6 +79,9 @@ builder.Services.AddAuthorization(options =>
 });
 //3. 注册自定义的授权处理程序,只需要短暂坚持即可，因为它不需要维护任何状态，每次授权时都会创建一个新的实例
 builder.Services.AddTransient<IAuthorizationHandler, IsHostRequirementHandler>();
+//注册 CloudinarySettings 配置类，并从 appsettings.json 中绑定配置
+builder.Services.Configure<CloudinarySettings>(
+    builder.Configuration.GetSection("CloudinarySettings"));
 
 var app = builder.Build();
 
