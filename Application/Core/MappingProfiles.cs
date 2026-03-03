@@ -30,5 +30,11 @@ public class MappingProfiles : AutoMapper.Profile
 
         CreateMap<Photo, PhotoDto>();
         CreateMap<User, UserProfileDto>();
+        //用于EditProfile中给实体赋值,当UserProfileDto中的属性值为null时，不会覆盖User实体对象中对应的属性值
+        CreateMap<UserProfileDto, User>()
+        .ForMember(d => d.Id, o => o.Ignore())
+        .ForMember(d => d.ImageUrl, opt => opt.Condition(src => src.ImageUrl != null))
+        .ForAllMembers(opts =>
+            opts.Condition((src, dest, srcMember, destMember) => srcMember != null));
     }
 }
