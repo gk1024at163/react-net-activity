@@ -21,10 +21,12 @@ export const useActivities = (id?: string) => {
         enabled: !id && location.pathname === '/activities' && !!currentUser,
         select: (data) => {
             return data.map(activity => {
+                const host = activity.attendees.find(x => x.id === activity.hostId);
                 return {
                     ...activity,
                     isHost: currentUser.id === activity.hostId,
-                    isGoing: activity.attendees.some(a => a.id === currentUser.id)
+                    isGoing: activity.attendees.some(a => a.id === currentUser.id),
+                    hostImageUrl: host?.imageUrl
                 }
             })
         }
@@ -38,10 +40,12 @@ export const useActivities = (id?: string) => {
         },
         enabled: !!id && !!currentUser,// 仅当提供了 id 并且登录了 时才启用此查询
         select: (data) => {
+            const host = data.attendees.find(x => x.id === data.hostId);
             return {
                 ...data,
                 isHost: data.hostId === currentUser.id,
-                isGoing: data.attendees.some(a => a.id === currentUser.id)
+                isGoing: data.attendees.some(a => a.id === currentUser.id),
+                hostImageUrl: host?.imageUrl
             }
         },
         refetchOnWindowFocus: false, // 默认值为 true  窗口聚焦时自动刷新数据

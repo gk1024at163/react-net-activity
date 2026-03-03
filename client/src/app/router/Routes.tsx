@@ -11,6 +11,7 @@ import LoginForm from "../../features/account/LoginForm";
 import RequireAuth from "./RequireAuth";
 import RegisterForm from "../../features/account/RegisterForm";
 import ActivityDetailPage from "../../features/activities/detail/ActivityDetailPage";
+import ProfilePage from "../../features/profiles/ProfilePage";
 
 export const router = createBrowserRouter([
     {
@@ -24,6 +25,7 @@ export const router = createBrowserRouter([
                     { path: "activities/:id", element: <ActivityDetailPage /> },
                     { path: "createActivity", element: <ActivityForm key='create' /> },
                     { path: "manage/:id", element: <ActivityForm key='manage' /> },
+                    { path: "profiles/:id", element: <ProfilePage /> },
                 ]
             },
             // 不需要身份验证

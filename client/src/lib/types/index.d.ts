@@ -15,6 +15,7 @@ type Activity = {
   hostDisplayName: string
   isGoing: boolean
   isHost: boolean
+  hostImageUrl?: string
 }
 
 // LocationIQ 的位置查詢結果
@@ -62,3 +63,8 @@ type Profile = {
   bio?: string
   imageUrl?: string
 }
+
+type Photo = {
+  id: string;
+  url: string;
+};

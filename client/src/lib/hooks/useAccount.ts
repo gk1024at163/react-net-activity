@@ -1,14 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { LoginSchema } from "../schemas/loginSchema";
 import agent from "../api/agent";
-import { useLocation, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 import type { RegisterSchema } from "../schemas/registerSchema";
 import { toast } from "react-toastify";
 
 export const useAccount = () => {
     const queryClient = useQueryClient();
     const navigate = useNavigate();
-    const location = useLocation();
+
     //用户登录
     const loginUser = useMutation({
         mutationFn: async (creds: LoginSchema) => {
@@ -43,8 +43,6 @@ export const useAccount = () => {
             return response.data;
         },
         enabled: !queryClient.getQueryData(['currentUser'])
-            && location.pathname !== '/login'
-            && location.pathname !== '/register',//缓存中没有当前用户信息时才查询
     });
     //用户注册
     const registerUser = useMutation({
