@@ -13,6 +13,7 @@ using Microsoft.EntityFrameworkCore;
 using Persistence;
 using Infrastructure.Security;
 using Infrastructure.Photos;
+using API.SignalR;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -46,6 +47,7 @@ builder.Services.Configure<JsonOptions>(options =>
 {
     options.SerializerOptions.WriteIndented = true; // 启用缩进格式
 });
+builder.Services.AddSignalR();//注册 SignalR 服务
 builder.Services.AddMediatR(x =>
 {
     x.RegisterServicesFromAssemblyContaining<GetActivityList.Handler>();
@@ -105,6 +107,7 @@ app.MapControllers(); //负责路由
 
 //3. 映射api认证端点
 app.MapGroup("api").MapIdentityApi<User>();
+app.MapHub<CommnetHub>("/comments");//映射 SignalR Hub 的路由,客户端将通过这个路径连接到 SignalR Hub
 
 // 初始化数据库
 using var scope = app.Services.CreateScope();

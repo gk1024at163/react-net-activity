@@ -68,3 +68,19 @@ type Photo = {
   id: string;
   url: string;
 };
+
+type ChatComment = {
+  id: string;
+  body: string;
+  createdAt: Date;
+  userId: string;
+  displayName: string;
+  imageUrl?: string;
+}
+// client/src/lib/types/index.d.ts
+type Result<T> = {
+  isSuccess: boolean;
+  value: T;
+  error: string | null;
+  code?: number;
+}

@@ -20,4 +20,6 @@ public class Activity
 
     //导航属性 navigation properties
     public ICollection<ActivityAttendee> Attendees { get; set; } = [];
+    //一个活动有多个评论
+    public ICollection<Comment> Comments { get; set; } = [];
 }

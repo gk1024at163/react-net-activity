@@ -36,5 +36,11 @@ public class MappingProfiles : AutoMapper.Profile
         .ForMember(d => d.ImageUrl, opt => opt.Condition(src => src.ImageUrl != null))
         .ForAllMembers(opts =>
             opts.Condition((src, dest, srcMember, destMember) => srcMember != null));
+
+        //Comment到CommentDto的映射，DisplayName和ImageUrl是CommentDto中的属性，需要从Comment的User导航属性中获取DisplayName和ImageUrl来赋值
+        CreateMap<Comment, CommentDto>()
+            .ForMember(d => d.DisplayName, opt => opt.MapFrom(s => s.User.DisplayName))
+            .ForMember(d => d.ImageUrl, opt => opt.MapFrom(s => s.User.ImageUrl));
+
     }
 }
