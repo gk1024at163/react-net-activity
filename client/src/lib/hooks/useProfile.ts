@@ -160,6 +160,25 @@ export const useProfile = (id?: string) => {
     });
 
 
+    const updateFollowing = useMutation({
+        mutationFn: async () => {
+            await agent.post(`/profiles/${id}/follow`);
+        },
+        onSuccess: () => {
+            queryClient.setQueryData(["profile", id], (data: Profile) => {
+                if (!data || data.followersCount === undefined) return data;
+                return {
+                    ...data,
+                    following: !data.following,
+                    followersCount: data.following ?
+                        data.followersCount - 1
+                        : data.followersCount + 1
+                }
+
+            })
+        }
+    })
+
     // 判断是否是当前用户
     const isCurrentUser = useMemo(() => {
         // 从查询缓存中获取当前用户的信息 与 profile 的 id 进行比较
@@ -173,6 +192,7 @@ export const useProfile = (id?: string) => {
         uploadPhoto,
         setMainPhoto,
         deletePhoto,
-        updateProfile
+        updateProfile,
+        updateFollowing
     };
 }

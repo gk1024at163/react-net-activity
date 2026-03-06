@@ -2,7 +2,6 @@ import { Avatar, Box, Button, Card, CardContent, CardHeader, Chip, Divider, Typo
 import { Link } from "react-router";
 import { AccessTime, Place } from "@mui/icons-material";
 import { formatDate } from "../../../lib/util/util";
-import ProfileCard from "../../profiles/ProfileCard";
 import AvatarPopover from "../../../app/shared/components/AvatarPopover";
 
 type Props = {

@@ -1,14 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { LoginSchema } from "../schemas/loginSchema";
 import agent from "../api/agent";
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import type { RegisterSchema } from "../schemas/registerSchema";
 import { toast } from "react-toastify";
 
 export const useAccount = () => {
     const queryClient = useQueryClient();
     const navigate = useNavigate();
-
+    const location = useLocation();
     //用户登录
     const loginUser = useMutation({
         mutationFn: async (creds: LoginSchema) => {
@@ -17,9 +17,8 @@ export const useAccount = () => {
         },
         // 登录成功后，刷新当前用户信息
         onSuccess: () => {
+            // 使缓存失效
             queryClient.invalidateQueries({ queryKey: ['currentUser'] });
-            //登录后导航到活动仪表板
-            //naviagate('/activities');
         }
     });
     //用户登出

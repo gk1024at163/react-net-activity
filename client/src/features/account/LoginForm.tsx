@@ -22,7 +22,10 @@ export default function LoginForm() {
         await loginUser.mutateAsync(data, {
             onSuccess: () => {
                 console.log('Login successful');
-                navigate(location.state?.from || '/activities');//登录成功后跳转到登录前的页面
+                // 使用 replace: true 替换当前历史记录，而不是推入新记录
+                navigate(location.state?.from || '/activities', {
+                    replace: true
+                });//登录成功后跳转到登录前的页面
             },
         });
     }

@@ -103,11 +103,16 @@ app.UseHttpsRedirection();
 //2. 使用身份认证中间件，一定要在MapControllers之前
 app.UseAuthentication();//认证（先认证）
 app.UseAuthorization();//授权（才授权）
+app.UseDefaultFiles();//根路径找到默认文件 index.html
+app.UseStaticFiles();// 使用wwwroot目录下的文件
+
 app.MapControllers(); //负责路由
 
 //3. 映射api认证端点
 app.MapGroup("api").MapIdentityApi<User>();
 app.MapHub<CommnetHub>("/comments");//映射 SignalR Hub 的路由,客户端将通过这个路径连接到 SignalR Hub
+app.MapFallbackToController("Index", "Fallback");
+
 
 // 初始化数据库
 using var scope = app.Services.CreateScope();
